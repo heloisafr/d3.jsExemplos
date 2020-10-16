@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="utf-8">
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <!-- lib css bootrap -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous"> 
+<body>
+	<h6>Probabilidade de TAVI ser melhor e mais barato</h6>
+    <div class="row">
+        <div class="col-1"></div>
+        <div class="col-2">Dias Internação</div>
+        <div class="col-2">UTI</div>
+        <div class="col-2">Apto</div>
+    </div>    
+    <div class="row">
+        <div class="col-1"></div>
+        <div id="canvas1" class="col-2"></div>
+        <div id="canvas2" class="col-2"></div>
+        <div id="canvas3" class="col-2"></div>
+    </div>  
+    <script>    
+    
+
+        var trafficLight  = d3.select("body")
+            .append("svg")
+            .attr("height", 500) 
+            .attr("width",500)
+            .attr("x",0)
+            .attr("y",0)
+            .attr("fill","black");
+
+        // Append outer shapes
+        trafficLight.append("rect") .attr("x", 20) .attr("y", 20) .attr("height", 160).attr("width",60) .attr("fill","black");
+
+        trafficLight.append("rect").attr("x",43).attr("y",180).attr("height",160).attr("width",14)
+
+        trafficLight.append("rect").attr("x",30).attr("y",340).attr("height",100).attr("width",40)
+
+        // Append circular lights
+
+        var upperLight  = trafficLight.append("circle") .attr("cx", 50) .attr("cy", 50) .attr("r", 20) .attr("fill","red"); 
+
+        var middleLight = trafficLight.append ("circle") .attr("cx", 50) .attr("cy", 100) .attr("r", 20) .attr("fill","white");
+
+        var bottomLight = trafficLight.append("circle") .attr("cx", 50) .attr("cy", 150) .attr("r", 20) .attr("fill","white"); 
+
+        var n = 0;
+
+        function changeColor(){
+            n += 1
+            if (n % 2 !== 0){
+                middleLight.attr("fill","orange").transition().attr("r",22).duration(1000).transition().duration(2000).attr("r",20).ease(d3.easeBounceOut)
+                upperLight.attr("fill","white")
+                bottomLight.attr("fill","white")}
+            else if (n % 4 ===0){
+                upperLight.attr("fill","red").transition().duration(1000).attr("r",22).transition().duration(2000).attr("r",20).ease(d3.easeQuadIn)
+                middleLight.attr("fill","white")
+                bottomLight.attr("fill","white")}
+            else {
+                bottomLight.attr("fill","green").transition().duration(1000).attr("r",22).transition().duration(2000).attr("r",20).ease(d3.easeCubicOut)
+                middleLight.attr("fill","white")
+                upperLight.attr("fill","white")
+                }    
+        };
+
+        trafficLight.on("click",changeColor);    
+    
+    </script>
+<!-- adiciona lib js jquery ------------>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+    <!-- adiciona lib js do bootstrap ----------------->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+</body>     

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Categoria Eixo Duplo</title>
+    <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha256-cCueBR6CsyA4/9szpPfrX3s49M9vUU5BgtiJj06wt/s=" crossorigin="anonymous"></script>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script src="grafico-categoria.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+</head>
+<body>
+        <div class="row">
+           <div class="col-5">
+                <svg id="grafico" viewBox='0 0 800 600'></svg>
+               </div>
+        </div>
+<script>
+    try {
+
+        let data = [
+            {"categorie": "2018", "values": [{"value": 9, "rate": "número1"}, {"value": 12, "rate": "número2"}]},
+            {"categorie": "2019", "values": [{"value": 10, "rate": "número1"}, {"value": 15, "rate": "número2"}]}
+            ]
+
+        let grafico = new GraficoBarrasSubCategoria('grafico', data);
+        grafico.criar();
+
+    } catch (err) {
+        console.log(err)
+    }
+</script>
+
+</body>
+
+</html>

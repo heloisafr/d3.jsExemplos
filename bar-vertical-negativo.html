@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous"> 
+<body>
+	<h6>Barra Vertical com Negativo</h6>
+       <div class="row">
+           <div class="col-3">1</div>
+           <div id="canvas" class="col-4"></div>
+           <div class="col-3">2</div>
+       </div>
+<script>
+
+	var data = [12,30,48,-25,1,67,78];  
+	var width = 500;
+	var height = 500;
+    
+	
+	// pega o elemento da pagina e cria um svg que � onde vai ser trabalhado os graficos
+	var svg = d3.select('#canvas')
+		.append("svg")
+        .attr('preserveAspectRatio', 'xMinYMin meet')
+        .attr('viewBox','0 0 '+width+' '+height);
+        
+    var margin = {top: 10, right: 10, bottom: 30, left: 30};
+	width = width - margin.left - margin.right;
+	height = height - margin.top - margin.bottom;  
+    var barWidth = (width / data.length);
+    
+    var g = svg
+        .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+		    
+	// scala para Y (valores) ----------------------------------
+	var y = d3.scaleLinear()
+        .domain([d3.min(data),d3.max(data)])
+        .range([height,0]);	
+	var yAxis = d3.axisLeft(y).ticks(10);
+	g.append("g")
+		.call(yAxis);
+        
+    // eixo X
+    // 
+    // 
+    // 
+    // traça linha no eixo X (visual)
+    g.append("line")
+       .attr("y1", y(0))
+       .attr("y2", y(0))
+       .attr("x1", 0)
+       .attr("x2", width)
+       .attr("stroke", "black");
+     
+    // as barras
+	var wScale = d3.scaleLinear()
+        .domain([d3.min(data),d3.max(data)]) //valor minimo e maximo dos meus dados
+        .range([height,0]) //o width significa que qualquer valor que for 80 vai ser igual a altura do svg    
+   
+	// cria grupo para colocar o grafico
+	var selection = g.append("g")
+		.attr("transform", "translate(0,"+0+")" );		
+	    
+	var bars = selection.selectAll("rect") // nao tem retangulo ainda mas � assim mesmo
+		.data(data) // passa os dados para d3
+		.enter() 
+		.append("rect") // agora sim cria os retangulos com os dados
+		.attr("x",function(d,i){ return i*barWidth;})
+		.attr("width",barWidth)
+		.attr("y", y(0))
+		.attr("height",0)
+		.attr("fill","none");    
+        
+	// faz escala de cores degrade
+	var colorScale= d3.scaleLinear()
+		.domain([d3.min(data),d3.max(data)])
+		.range(["#f37120","#2c6bb4"]);
+        
+	bars.transition()
+		.duration(1500)
+		.attr("y", function(d) { return (d<0 ? y(0) : y(d));  })
+		.attr("height",function(d){ return Math.abs(y(d) - y(0)); })
+		.attr("fill",function(d){return colorScale(d);});         
+
+	// colocando o texto
+	var text = selection.selectAll("text")
+		.data(data) // passa os dados para d3
+		.enter() 
+		.append("text")
+		.text(function(d){ return d;})
+		.attr("y",function(d){ 
+            return (d<=0 ? wScale(d+1) : wScale(d-4));
+        })		
+		.attr("x",function(d,i){ return (i*barWidth)+3;})	
+        .style('font-size', '1em')
+		.attr("fill","white");
+
+</script>
+<!-- adiciona lib js jquery ------------>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+    <!-- adiciona lib js do bootstrap ----------------->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+</body>

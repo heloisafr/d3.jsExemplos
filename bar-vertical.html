@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<!-- lib css bootrap -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous"> 
+<!--https://eddyerburgh.me/create-responsive-bar-chart-d3-js-->
+<!-- quando define um tamanho pro div ele pela o div-width/viewBox-width-->
+<body>
+	<h6>Barras simples com animação</h6>
+       <div class="row">
+           <div class="col-3">1</div>
+           <div id="canvas" class="col-4"></div>
+           <div class="col-3">2</div>
+       </div>
+<script>
+
+	var data = [12,30,43,67,78];
+	const width = 500;
+	const height = 500;
+    const barWidth = (width / data.length);
+	
+	// pega o elemento da pagina e cria um svg que � onde vai ser trabalhado os graficos
+	var svg = d3.select('#canvas')
+		.append("svg")
+        .attr('preserveAspectRatio', 'xMinYMin meet')
+        .attr('viewBox','0 0 '+width+' '+height)
+		.style("background","#ccc");
+		    
+	// scala para altura das barras
+	var wScale = d3.scaleLinear()
+		.domain([0,d3.max(data)]) //valor minimo e maximo dos meus dados
+		.range([height,0]) //o width significa que qualquer valor que for 80 vai ser igual a largura do svg
+		    
+	// faz escala de cores degrade
+	var colorScale= d3.scaleLinear()
+		.domain([0,d3.max(data)])
+		.range(["#f37120","#2c6bb4"]);
+		
+	var bars = svg.selectAll("rect") // nao tem retangulo ainda mas � assim mesmo
+		.data(data) // passa os dados para d3
+		.enter() 
+		.append("rect") // agora sim cria os retangulos com os dados
+		.attr("y",height)
+		.attr("x",function(d,i){ return (i*barWidth);})
+		.attr("width",barWidth)
+		.attr("height",0)
+		.attr("fill","#666");
+
+	// colocando anima��o
+	bars.transition()
+		.duration(1500)
+		.attr("y", function(d) { return wScale(d); })
+		.attr("height",function(d){ return height-wScale(d);})
+		.attr("fill",function(d){return colorScale(d);});
+	
+		
+	// colocando o texto
+	var text = svg.selectAll("text")
+		.data(data) // passa os dados para d3
+		.enter() 
+		.append("text")
+		.text(function(d){ return d;})
+		.attr("y",function(d){ return wScale(d-3);})		
+		.attr("x",function(d,i){ return (i*barWidth);})	
+		.attr("fill","white")
+</script>
+<!-- adiciona lib js jquery ------------>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+    <!-- adiciona lib js do bootstrap ----------------->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+</body>

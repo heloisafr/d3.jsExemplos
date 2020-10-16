@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous"> 
+<style>
+
+/*hides tick marks on bottom xaxis */
+.axis line{
+      visibility:hidden;
+    }
+/* hides bottom xaxis line*/
+.axis .domain {
+  display: none;
+}
+</style>
+<body>
+	<h6>Barras com Categoria e SubCategoria</h6>
+       <div class="row">
+           <div class="col-2"></div>
+           <div id="canvas" class="col-6"></div>
+       </div>
+<script>
+
+    var data = [
+        {
+            "categorie": "Dias Internação", 
+            "values": [
+                {
+                    "value": 97842728.045975, 
+                    "rate": "Cirurgia Aberta"
+                }, 
+                {
+                    "value": 391042049.88605, 
+                    "rate": "TAVI"
+                }, 
+                {
+                    "value": -106800678.1599186, 
+                    "rate": "Diferença"
+                }
+            ]
+        }, 
+        {
+            "categorie": "Dias UTI", 
+            "values": [
+                {
+                    "value": 473571974.86560005, 
+                    "rate": "Cirurgia Aberta"
+                }, 
+                {
+                    "value": 289499083.10606253, 
+                    "rate": "TAVI"
+                }, 
+                {
+                    "value": -184072891.75953752, 
+                    "rate": "Diferença"
+                }
+            ]
+        }, 
+        {
+            "categorie": "Dias Apto", 
+            "values": [
+                {
+                    "value": 523357766.68500006, 
+                    "rate": "Cirurgia Aberta"
+                }, 
+                {
+                    "value": 505058668.60050017, 
+                    "rate": "TAVI"
+                }, 
+                {
+                    "value": -18299098.084499896, 
+                    "rate": "Diferença"
+                }
+            ]
+        }
+    ];
+	var width = 600;
+	var height = 300;
+    var minData = d3.min(data, function(categorie){ return d3.min(categorie.values, function(d) { return d.value; }); });
+    var maxData = d3.max(data, function(categorie){ return d3.max(categorie.values, function(d) { return d.value; }); });
+
+	// pega o elemento da pagina e cria um svg
+    // preserveAspectRatio e viewBox são responsaveis por deixar o desenho recursivo
+	var svg = d3.select('#canvas')
+		.append("svg")
+        .attr('preserveAspectRatio', 'xMinYMin meet')
+        .attr('viewBox','0 0 '+width+' '+height)
+		.style("background","#ccc");
+		    
+    var margin = {top: 20, right: 20, bottom: 30, left: 90};
+	width = width - margin.left - margin.right;
+	height = height - margin.top - margin.bottom;     
+    
+    // cria um grupo com margens para acolher o gráfico
+    // fica melhor usando essa técnica pois não precisa se preocupar com a posição dos eixos
+    var g = svg
+        .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+		
+	// scala para Y (valores) ----------------------------------
+	var y = d3.scaleLinear()
+        .domain([(minData>0 ? 0 : (minData+(minData/10))), (maxData+(maxData/10))]) // O min é calculado para não dar pau nos eixos
+        .range([height,0]);				
+	var yAxis = d3.axisLeft(y).ticks(7);
+	
+	// coloca o eixo no grupo
+	g.append("g")
+		.call(yAxis)
+        .style('font-size', '0.7em');
+		
+
+	// scala para X0 (categorias) -----------------------------------
+    var categories = data.map(function(d) { return d.categorie; });
+    var x0 = d3.scaleBand()
+        .domain(categories)
+        .range([0, width], .1); 
+    var xAxis = d3.axisBottom(x0);       
+     
+    // coloca o eixo no grupo
+    g.append("g")
+        .attr("class", "axis") // esse cara que vai esconder a linha
+        .attr("transform", "translate(0," + (height+8) + ")")
+        .call(xAxis)
+        .style('font-size', '0.8em');
+
+    // cria os grupos de categorias
+    var grupos = g.selectAll(".nada") // esquisito - mas é isso mesmo
+        .data(data)
+        .enter()
+        .append("g")
+        .attr("transform",function(d) { return "translate(" + x0(d.categorie) + ",0)"; });    
+     
+    // traça linha no eixo X (visual)
+    g.append("line")
+       .attr("y1", y(0))
+       .attr("y2", y(0))
+       .attr("x1", 0)
+       .attr("x2", width)
+       .attr("stroke", "black");
+       
+    var subcategories = data[0].values.map(function(d) { return d.rate; });
+    var x1 = d3.scaleBand()
+        .domain(subcategories)
+        .range([0, x0.bandwidth()])
+        .paddingOuter(0.25)
+        .paddingInner(0.05);
+
+	var bars = grupos.selectAll("rect") // nao tem retangulo ainda mas � assim mesmo
+		.data(function(d) { return d.values; })
+		.enter() 
+		.append("rect") // agora sim cria os retangulos com os dados
+		.attr("x",function(d){ return x1(d.rate);})
+		.attr("y",y(0))
+        .attr("width",x1.bandwidth())
+		.attr("height",0)
+		.attr("fill","none"); 
+       
+	// faz escala de cores degrade
+	var colorScale= d3.scaleOrdinal()
+		.range(["#f37120","#2c6bb4","#00c1f3"]);
+        
+    // coloca animação
+	bars.transition()
+		.duration(1500)
+		.attr("y", function(d) { return (d.value<0 ? y(0) : y(d.value));  })
+		.attr("height",function(d){ return Math.abs(y(d.value) - y(0)); })
+		.attr("fill",function(d){return colorScale(d.rate);});        
+
+	// colocando o texto
+	var text = grupos.selectAll("text")
+		.data(function(d) { return d.values; })
+		.enter() 
+		.append("text")
+		.text(function(d){ return (d.value).toLocaleString(undefined, {maximumFractionDigits:0});})
+		.attr("y",function(d) { return y(d.value); })		
+		.attr("x",function(d){ return x1(d.rate);})
+        .attr("dx","0.1em")
+        .attr("dy",function(d){ return (d.value<=0 ? "0.9em" : "-0.3em"); })
+        .style('font-size', '0.8em')
+		.attr("fill", "brack");
+        
+        
+    // legenda ---------------------------------------------------
+    var legend = g.selectAll(".legend")
+        .data(data[0].values.map(function(d) { return d.rate; }).reverse())
+        .enter()
+        .append("g")
+        .attr("class", "legend")
+        .attr("transform", function(d,i) { return "translate(0," + i * 20 + ")"; })
+        .style("opacity","0");
+
+    legend.append("rect")
+        .attr("x", width - 18)
+        .attr("width", 18)
+        .attr("height", 18)
+        .style("fill", function(d) { return colorScale(d); });      
+    legend.append("text")
+        .attr("x", width - 24)
+        .attr("y", 9)
+        .attr("dy", ".35em")
+        .style("text-anchor", "middle")
+        .style('font-size', '0.8em')
+        .text(function(d) {return d; }); 
+
+    legend.transition().duration(500).delay(function(d,i){ return 1300 + 100 * i; }).style("opacity","1");            
+
+</script>
+<!-- adiciona lib js jquery ------------>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+    <!-- adiciona lib js do bootstrap ----------------->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+</body>

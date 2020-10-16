@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="utf-8">
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <!-- lib css bootrap -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous"> 
+    <style>
+        .canvas g.arc {
+            fill: steelblue;
+        }
+
+        .canvas g.pointer {
+            fill: #2c6bb4;
+            stroke: #235690;
+        }
+
+        .canvas g.label text {
+            text-anchor: middle;
+            font-size: 0.9em;
+            font-weight: bold;
+            fill: #666;
+        }
+        
+        .canvas text.icer {
+            text-anchor: middle;
+            font-size: 1em;
+            font-weight: bold;
+            fill: #666;
+        }
+	</style>
+</head>
+<body>
+	<h6>ICER</h6>
+    <div class="row">
+        <div class="col-1"></div>
+        <div class="col-2">Dias Internação</div>
+        <div class="col-2">UTI</div>
+        <div class="col-2">Apto</div>
+        <div class="col-2">Freq Hosp</div>
+    </div>    
+    <div class="row">
+        <div class="col-1"></div>
+        <div id="canvas1" class="col-2"></div>
+        <div id="canvas2" class="col-2"></div>
+        <div id="canvas3" class="col-2"></div>
+        <div id="canvas4" class="col-2"></div>
+    </div>
+        
+<script>
+    
+    criar("canvas1",12700);
+//    criar("canvas2",25000);
+//    criar("canvas3",35684);
+//    criar("canvas4",5487);
+    
+    function criar(id,icer){
+    
+        var minValue = 0;
+        var maxValue = 40; // CUSTO MEDIO CA - CUSTO MEDIO TAVI    
+        var width = 200;
+        var height = width/1.4;
+        var qtdeTicks = 5; // qtde de faixas que temos
+        var	outerWidth	= width/11; // largura de fora do arco 
+        var	innerWidth	= width/7; // largura de dentro do arco
+        var	minAngle = -90;
+        var	maxAngle = 90;   
+        var labelInset = 12; // distancia dos números do arco
+        var range = maxAngle - minAngle;
+        var pointerWidth				= 10;
+        var	pointerTailLength			= 5;
+        var	pointerHeadLengthPercent	= 0.9; 
+        var icer = icer;
+        var anguloIcer = ((maxAngle/(maxValue/2))*(icer/1000))-Math.abs(minAngle);
+    
+        // pega o elemento da pagina e cria um svg que � onde vai ser trabalhado os graficos
+        var svg = d3.select('#'+id)
+            .append("svg")
+            .attr('class', 'canvas')
+            .attr('preserveAspectRatio', 'xMinYMin meet')
+            .attr('viewBox','0 0 '+width+' '+height);
+
+        var margin = {top: 10, right: 10, bottom: 10, left: 10};
+        width = width - margin.left - margin.right;
+        height = height - margin.top - margin.bottom;    
+        var r = width / 2;    
+
+        var g = svg
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");  
+
+        // o arco -----------------------------------------------------------------
+        var tickData = d3.range(qtdeTicks)
+            .map(function() {return 1/qtdeTicks;});        
+
+        var arc = d3.arc()
+            .innerRadius(r - innerWidth - outerWidth)
+            .outerRadius(r - outerWidth)
+            .startAngle(function(d, i) {
+                var ratio = d * i;
+                return deg2rad(minAngle + (ratio * range));
+            })
+            .endAngle(function(d, i) {
+                var ratio = d * (i+1);
+                return deg2rad(minAngle + (ratio * range));
+            });         
+
+        var arcs = g.append('g')
+            .attr('class', 'arc')
+            .attr('transform', 'translate('+r +','+ r +')');        
+
+        var color = d3.scaleLinear()
+                .domain([0, 2, 4]) // 0 a 4 porque são 5 ticks
+                .range(['#00e600', '#ffff00', '#ff471a'])
+                .interpolate(d3.interpolateHcl);
+
+        arcs.selectAll('path')
+            .data(tickData)
+            .enter()
+            .append('path')
+            .attr('fill', function(d, i) {
+                return color(i);
+            })
+            .attr('d', arc);        
+
+        // escala numerica --------------------------------------------------
+        var lg = g.append('g')
+                .attr('class', 'label')
+                .attr('transform', 'translate('+r +','+ r +')');
+
+        // a linear scale that maps domain values to a percent from 0..1
+        var scale = d3.scaleLinear()
+            .range([0,1])
+            .domain([minValue, maxValue]);
+        var ticks = scale.ticks(qtdeTicks);         
+
+        lg.selectAll('text')
+            .data(ticks)
+            .enter()
+            .append('text')
+            .attr('transform', function(d) {
+                console.log(d)
+                var ratio = scale(d);
+                var newAngle = minAngle + (ratio * range);
+                return 'rotate(' +newAngle +') translate(0,' +(labelInset - r) +')';
+            })
+            .text(d3.format('d'));                   
+
+        // ponteiro -------------------------------------------------------------
+        var pointerHeadLength = Math.round(r * pointerHeadLengthPercent);
+        var lineData = [ [pointerWidth / 2, 0], 
+                        [0, -pointerHeadLength],
+                        [-(pointerWidth / 2), 0],
+                        [0, pointerTailLength],
+                        [pointerWidth / 2, 0] ];
+
+        var pointerLine = d3.line().curve(d3.curveLinear)
+        var pg = g.append('g').data([lineData])
+            .attr('class', 'pointer')
+            .attr('transform', 'translate('+r +','+ r +')');
+
+        var pointer = pg.append('path')
+              .attr('d', pointerLine)
+              .attr('transform', 'rotate(' + minAngle + ')');   
+
+        pointer.transition()
+            .duration(750)
+            .ease(d3.easeElastic)
+            .attr('transform', 'rotate(' + anguloIcer + ')');    
+
+        // exibe o ICER ---------------------------------------
+        var icer = g.append('text')
+            .attr('class', 'icer')
+            .attr('transform', 'translate('+ r +','+ height +')')
+            .text(icer+"/dia evitado");    
+
+    }
+    
+	function deg2rad(deg) {
+		return deg * Math.PI / 180;
+	}    
+</script>
+<!-- adiciona lib js jquery ------------>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+    <!-- adiciona lib js do bootstrap ----------------->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+</body>    

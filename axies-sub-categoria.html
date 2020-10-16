@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous"> 
+<style>
+
+/*hides tick marks on bottom xaxis */
+.axis line{
+      visibility:hidden;
+    }
+/* hides bottom xaxis line*/
+.axis .domain {
+  display: none;
+}
+</style>
+<body>
+	<h6>Axies com Categoria e SubCategoria</h6>
+       <div class="row">
+           <div class="col-2">1</div>
+           <div id="canvas" class="col-8"></div>
+       </div>
+<script>
+
+    var data = [
+        {
+            "categorie": "Dias Internação", 
+            "values": [
+                {
+                    "value": 14, 
+                    "rate": "Cirurgia Aberta"
+                }, 
+                {
+                    "value": 7, 
+                    "rate": "TAVI"
+                }, 
+                {
+                    "value": 7, 
+                    "rate": "Diferença"
+                }
+            ]
+        }, 
+        {
+            "categorie": "Dias UTI", 
+            "values": [
+                {
+                    "value": 4, 
+                    "rate": "Cirurgia Aberta"
+                }, 
+                {
+                    "value": 7, 
+                    "rate": "TAVI"
+                }, 
+                {
+                    "value": 3, 
+                    "rate": "Diferença"
+                }
+            ]
+        }, 
+        {
+            "categorie": "Dias Apto", 
+            "values": [
+                {
+                    "value": 7, 
+                    "rate": "Cirurgia Aberta"
+                }, 
+                {
+                    "value": 3, 
+                    "rate": "TAVI"
+                }, 
+                {
+                    "value": -4, 
+                    "rate": "Diferença"
+                }
+            ]
+        }, 
+        {
+            "categorie": "Freq Hosp", 
+            "values": [
+                {
+                    "value": 2, 
+                    "rate": "Cirurgia Aberta"
+                }, 
+                {
+                    "value": 2, 
+                    "rate": "TAVI"
+                }, 
+                {
+                    "value": 0, 
+                    "rate": "Diferença"
+                }
+            ]
+        }
+    ];
+	var width = 800;
+	var height = 400;
+    var minData = d3.min(data, function(categorie){ return d3.min(categorie.values, function(d) { return d.value; }); });
+    var maxData = d3.max(data, function(categorie){ return d3.max(categorie.values, function(d) { return d.value; }); });
+
+	// pega o elemento da pagina e cria um svg
+    // preserveAspectRatio e viewBox são responsaveis por deixar o desenho recursivo
+	var svg = d3.select('#canvas')
+		.append("svg")
+        .attr('preserveAspectRatio', 'xMinYMin meet')
+        .attr('viewBox','0 0 '+width+' '+height)
+		.style("background","#ccc");
+		    
+    var margin = {top: 10, right: 10, bottom: 30, left: 30};
+	width = width - margin.left - margin.right;
+	height = height - margin.top - margin.bottom;     
+    
+    // cria um grupo com margens para acolher o gráfico
+    // fica melhor usando essa técnica pois não precisa se preocupar com a posição dos eixos
+    var g = svg
+        .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+		
+	// scala para Y (valores) ----------------------------------
+	var y = d3.scaleLinear()
+        .domain([(minData>0 ? 0 : minData),maxData]) // O min é calculado para não dar pau nos eixos
+        .range([height,0]);				
+	var yAxis = d3.axisLeft(y).ticks(7); 
+	// coloca o eixo no grupo
+	g.append("g")
+		.call(yAxis)
+        .style('font-size', '0.8em');
+		
+
+	// scala para X0 (categorias) -----------------------------------
+    var categories = data.map(function(d) { return d.categorie; });
+    var x0 = d3.scaleBand()
+        .domain(categories)
+        .range([0, width], .1); 
+    var xAxis = d3.axisBottom(x0);       
+     
+    // coloca o eixo no grupo
+    g.append("g")
+        .attr("class", "axis") // esse cara que vai esconder a linha
+        .attr("transform", "translate(0," + height + ")")
+        .call(xAxis); 
+
+    // cria os grupos de categorias
+    var grupos = g.selectAll(".nada") // esquisito - mas é isso mesmo
+        .data(data)
+        .enter()
+        .append("g")
+        .attr("transform",function(d) { return "translate(" + x0(d.categorie) + ",0)"; });    
+     
+    // traça linha no eixo X visual
+    g.append("line")
+       .attr("y1", y(0))
+       .attr("y2", y(0))
+       .attr("x1", 0)
+       .attr("x2", width)
+       .attr("stroke", "black");
+
+</script>
+<!-- adiciona lib js jquery ------------>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+    <!-- adiciona lib js do bootstrap ----------------->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+</body>

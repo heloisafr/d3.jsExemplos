@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<!--O original esta usando v2 do D3js-->
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<!-- lib css bootrap -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous"> 
+
+<style>
+	#canvas g.arc {
+		fill: steelblue;
+	}
+
+	#canvas g.pointer {
+		fill: #e85116;
+		stroke: #b64011;
+	}
+	
+	#canvas g.label text {
+		text-anchor: middle;
+		font-size: 14px;
+		font-weight: bold;
+		fill: #666;
+	}
+	</style>
+<body>
+	<h6>Velocimetro</h6>
+       <div class="row">
+           <div class="col-3">1</div>
+           <div id="canvas" class="col-5"></div>
+           <div class="col-3">2</div>
+       </div>
+<script>
+    
+	var width = 200;
+	var height = 120;
+    var minValue = 0;
+    var maxValue = 10;
+    var majorTicks = 5;
+	var	ringInset	= 20;
+	var	ringWidth	= 20;
+	var	minAngle = -90;
+	var	maxAngle = 90;   
+    var labelInset = 10;
+    var range = maxAngle - minAngle;
+    var size = 200;
+    var r = size / 2;
+    var arcColorFn = d3.interpolateHsl(d3.rgb('#e8e2ca'), d3.rgb('#3e6c0a'));
+    
+	var pointerWidth				= 10;
+	var	pointerTailLength			= 5;
+	var	pointerHeadLengthPercent	= 0.9;    
+    
+	// pega o elemento da pagina e cria um svg que � onde vai ser trabalhado os graficos
+	var svg = d3.select('#canvas')
+		.append("svg")
+        .attr('preserveAspectRatio', 'xMinYMin meet')
+        .attr('viewBox','0 0 '+width+' '+height)
+        .style("background","#ccc");
+        
+    var margin = {top: 0, right: 0, bottom: 0, left: 0};
+	width = width - margin.left - margin.right;
+	height = height - margin.top - margin.bottom;     
+    
+    var g = svg
+        .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");  
+        
+    var tickData = d3.range(majorTicks)
+        .map(function() {return 1/majorTicks;});        
+        
+        
+    var arc = d3.arc()
+        .innerRadius(r - ringWidth - ringInset)
+        .outerRadius(r - ringInset)
+        .startAngle(function(d, i) {
+            var ratio = d * i;
+            return deg2rad(minAngle + (ratio * range));
+        })
+        .endAngle(function(d, i) {
+            var ratio = d * (i+1);
+            return deg2rad(minAngle + (ratio * range));
+        });         
+        
+    var arcs = g.append('g')
+        .attr('class', 'arc')
+        .attr('transform', 'translate('+r +','+ r +')');        
+        
+    arcs.selectAll('path')
+        .data(tickData)
+        .enter()
+        .append('path')
+        .attr('fill', function(d, i) {
+            return arcColorFn(d * i);
+        })
+        .attr('d', arc);        
+        
+    var lg = g.append('g')
+            .attr('class', 'label')
+            .attr('transform', 'translate('+r +','+ r +')');
+        
+    // a linear scale that maps domain values to a percent from 0..1
+    var scale = d3.scaleLinear()
+        .range([0,1])
+        .domain([minValue, maxValue]);
+    var ticks = scale.ticks(majorTicks);         
+        
+    lg.selectAll('text')
+            .data(ticks)
+            .enter()
+            .append('text')
+            .attr('transform', function(d) {
+                var ratio = scale(d);
+                var newAngle = minAngle + (ratio * range);
+                return 'rotate(' +newAngle +') translate(0,' +(labelInset - r) +')';
+            })
+            .text(d3.format('d'));        
+        
+
+    var pointerHeadLength = Math.round(r * pointerHeadLengthPercent);
+    var lineData = [ [pointerWidth / 2, 0], 
+                    [0, -pointerHeadLength],
+                    [-(pointerWidth / 2), 0],
+                    [0, pointerTailLength],
+                    [pointerWidth / 2, 0] ];
+        
+    var pointerLine = d3.line().curve(d3.curveLinear)
+    var pg = g.append('g').data([lineData])
+        .attr('class', 'pointer')
+        .attr('transform', 'translate('+r +','+ r +')');
+    
+    var pointer = pg.append('path')
+          .attr('d', pointerLine)
+          .attr('transform', 'rotate(' + minAngle + ')');   
+    
+    pointer.transition()
+          .duration(750)
+          .ease(d3.easeElastic)
+          .attr('transform', 'rotate(' + 10 + ')');    
+       
+    
+	function deg2rad(deg) {
+		return deg * Math.PI / 180;
+	}    
+</script>
+<!-- adiciona lib js jquery ------------>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+    <!-- adiciona lib js do bootstrap ----------------->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+</body>    

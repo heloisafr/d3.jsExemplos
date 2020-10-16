@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<script src="https://d3js.org/d3.v5.min.js"></script>
+<!-- lib css bootrap -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous"> 
+<script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+<style type="text/css">
+
+.escala {
+font-size: 0.7em;   
+}
+
+.escala .ponto {
+fill: #2c6bb4;
+stroke: none;
+opacity: 0.8;
+}
+
+.escala .texto {
+   fill: #FFF;   
+}
+
+.escala .axis line{
+  stroke: #666;
+}
+
+.escala .axis path{
+  stroke: #666;
+}
+
+.escala .axis text{
+  fill: #666;
+}
+</style>
+<body>
+	<h6>Escala</h6>
+       <div class="row">
+           <div class="col-2">1</div>
+           <div id="canvas" class="col-5"></div>
+           <div class="col-2">2</div>
+       </div>
+<script>
+
+	var ponto = 90;
+
+	var data = [ { "x": 0, "y": 0},  { "x": 100, "y": 0.001}];
+
+	var width = 500;
+	var height = 80;
+	var margin = {top: 20, right: 15, bottom: 20, left: 10};
+
+	var svg = d3.select('#canvas')
+		.append("svg")
+		.attr('viewBox','0 0 '+width+' '+height);
+
+	var minData = 0;	
+	var maxData = 100;
+		
+	width = width - margin.left - margin.right;
+	height = height - margin.bottom;
+	var line_height = height/3;
+	
+	var g = svg
+		.append("g")
+		.attr("class","escala")
+		.attr("transform", "translate("+margin.left+",0)");  	
+		
+	// eixo X ----------------------------------------------------------
+	var x = d3.scaleLinear()
+		.domain([minData, maxData])
+		.range([minData, width]);
+	var xAxis = d3.axisBottom(x);            
+            
+	g.append("g")
+		.attr("transform", "translate(0,"+ height + ")")
+		.attr("class", "axis")
+		.call(xAxis);
+
+	// eixo Y -------------------------------------------------------
+	var y = d3.scaleLinear()
+		.domain([0,1])
+		.range([height-(line_height/2),0]);	
+        
+	// define como será o gradiente ---------------------------
+	var defs = svg.append("defs");
+	var gradient = defs.append("linearGradient")
+	   .attr("id", "svgGradient")
+	   .attr("x1", "0%")
+	   .attr("x2", "100%")
+	   .attr("y1", "0%")
+	   .attr("y2", "0%");
+	   
+	gradient.append("stop")
+	   .attr("offset", "20%")
+	   .attr("stop-color", "#ff5950")
+	   .attr("stop-opacity", 1);
+	   
+	gradient.append("stop")
+	   .attr("offset", "50%")
+	   .attr("stop-color", "#ffc107")
+	   .attr("stop-opacity", 1);
+	   
+	   gradient.append("stop")
+	   .attr("offset", "55%")
+	   .attr("stop-color", "#ffc107")
+	   .attr("stop-opacity", 1);
+	   
+	   gradient.append("stop")
+	   .attr("offset", "80%")
+	   .attr("stop-color", "#2dbc4e")
+	   .attr("stop-opacity", 1);	
+	
+	// desenha a escala -------------------------------------------------------    
+	/*var line = d3.line()
+		.x(function(d) { return x(d); })
+		.y(function(d) { return y(0); });*/
+
+	var line = d3.line()
+		 .x(function(d) { return x(d.x); })
+		 .y(function(d) { return y(d.y); });
+
+	var line = g.append("path")
+		      .attr("d", line(data))
+		      .attr("stroke-width", 20)
+		      .attr("stroke", "url(#svgGradient)")
+		      .attr("fill", "none");
+		      
+	// coloca o desenho do ponto -----------------------------------------------
+	var marcador = g.append("svg")
+		.attr('preserveAspectRatio', 'xMinYMin meet')
+		.attr('width','20')
+		.attr('height','20')
+		.attr('y',y(0.7))
+		.attr('x',x(0));
+		
+	var points = [[0,0],[20,0],[20,15],[10,20],[0,15]];
+		  		  
+	marcador.append("polygon")
+		.attr("points",points)
+		.attr("class", "ponto");		
+
+	marcador.transition()
+		.duration(4000)
+		.attr('x',x(ponto)-10); // 10 porque é a metade do tamanho do poligono
+		
+	// colocando o texto --------------------------------------------------
+	var xp = (ponto>9 ? 5 : 7);
+	var marcador_texto = marcador.append("text")
+		.text(ponto)
+		.attr("y", 12)		
+		.attr("x", xp)
+		.attr("class", "texto")
+		.style('opacity', '0');
+			
+	marcador_texto.transition()
+		.duration(4000)
+		.style('opacity', '1');
+				
+	g.append("text")
+		.text("PIOR estado de saúde imaginável")
+		.attr("y", y(0))		
+		.attr("x", x(0))
+		.attr("dy", ".35em")
+		.attr("dx", ".35em")
+		.attr("class", "texto");
+
+	g.append("text")
+		.text("MELHOR estado de saúde imaginável")
+		.attr("y", y(0))		
+		.attr("x", x(100))
+		.attr("dy", ".35em")
+		.attr("dx", "-.35em")
+		.style("text-anchor", "end")
+		.attr("class", "texto");		
+
+</script>
+<!-- adiciona lib js jquery ------------>
+    
+    <!-- adiciona lib js do bootstrap ----------------->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+</body>

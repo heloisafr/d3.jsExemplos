@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous"> 
+<body>
+	<h6>Axies com Categoria</h6>
+       <div class="row">
+           <div class="col-3">1</div>
+           <div id="canvas" class="col-4"></div>
+           <div class="col-3">2</div>
+       </div>
+<script>
+
+	var data = [
+            {
+                "value": 14, 
+                "rate": "CA"
+            }, 
+            {
+                "value": 10, 
+                "rate": "TAVI"
+            }, 
+            {
+                "value": -4, 
+                "rate": "Diferença"
+            }
+        ];
+	var width = 500;
+	var height = 500;
+    var minData = d3.min(data, function(d){ return d.value; });
+    var maxData = d3.max(data, function(d){ return d.value; });
+	
+	// pega o elemento da pagina e cria um svg
+    // preserveAspectRatio e viewBox são responsaveis por deixar o desenho recursivo
+	var svg = d3.select('#canvas')
+		.append("svg")
+        .attr('preserveAspectRatio', 'xMinYMin meet')
+        .attr('viewBox','0 0 '+width+' '+height)
+		.style("background","#ccc");
+		    
+    var margin = {top: 10, right: 10, bottom: 30, left: 30};
+	width = width - margin.left - margin.right;
+	height = height - margin.top - margin.bottom;     
+    
+    // cria um grupo com margens para acolher o gráfico
+    // fica melhor usando essa técnica pois não precisa se preocupar com a posição dos eixos
+    var g = svg
+        .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+		
+	// scala para Y (valores) ----------------------------------
+	var y = d3.scaleLinear()
+        .domain([(minData>0 ? 0 : minData),maxData]) // O min é calculado para não dar pau nos eixos
+        .range([height,0]);				
+	var yAxis = d3.axisLeft(y).ticks(7);
+	
+	// coloca o eixo no grupo
+	g.append("g")
+		.call(yAxis)
+        .style('font-size', '0.8em');
+		
+
+	// scala para X (itens) --------------------------------------
+	var x = d3.scaleBand()
+        .domain(data.map(function(d){ return d.rate; }))
+        .rangeRound([0,width]);
+        
+    var xAxis = d3.axisBottom(x);
+    
+    // calcula o Y para eixo X de acordo com os dados da amostra
+    var yScaleX = (minData<=0 ? y(0) : height); 
+    // coloca o eixo no grupo
+	g.append("g")
+		.attr("transform","translate(0,"+yScaleX+")")
+		.call(xAxis)
+        .style('font-size', '0.8em');  
+
+</script>
+<!-- adiciona lib js jquery ------------>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+    <!-- adiciona lib js do bootstrap ----------------->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+</body>

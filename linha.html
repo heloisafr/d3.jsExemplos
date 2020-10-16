@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<script src="https://d3js.org/d3.v5.min.js"></script>
+<!-- lib css bootrap -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous"> 
+
+<style type="text/css">
+.linha-azul-escuro {
+    fill: none;
+    stroke: #2c6bb4;
+    stroke-width: 2;
+}
+  
+.ponto-azul-escuro {
+    fill: #2c6bb4;
+    stroke: #fff;
+}
+.texto-azul-escuro {
+   fill: #2c6bb4; 
+}
+</style>
+<body>
+	<h6>Linhas simples com animação</h6>
+       <div class="row">
+           <div class="col-2">1</div>
+           <div id="canvas" class="col-5"></div>
+           <div class="col-2">2</div>
+       </div>
+<script>
+
+	var data = [
+        {
+            "value": 100, 
+            "ano": "2019"
+        }, 
+        {
+            "value": 80, 
+            "ano": "2020"
+        }, 
+        {
+            "value": 50, 
+            "ano": "2021"
+        },
+        {
+            "value": 30, 
+            "ano": "2022"
+        },
+        {
+            "value": 10, 
+            "ano": "2023"
+        }
+    ];
+	var width = 600;
+	var height = 500;
+     
+	// pega o elemento da pagina e cria um svg que � onde vai ser trabalhado os graficos
+	var svg = d3.select('#canvas')
+		.append("svg")
+        .attr('preserveAspectRatio', 'xMinYMin meet')
+        .attr('viewBox','0 0 '+width+' '+height)
+		.style("background","#efefef");
+        
+    var margin = {top: 20, right: 10, bottom: 30, left: 30};
+	width = width - margin.left - margin.right;
+	height = height - margin.top - margin.bottom;
+    var magico = width/5/2;
+		    
+    var g = svg
+        .append("g")
+        .attr("transform", "translate("+margin.left+","+margin.top+")");            
+            
+    // eixo X ----------------------------------------------------------
+    var anos = data.map(function(d) { return d.ano; });
+    var x = d3.scaleBand()
+        .domain(anos)
+        .range([0, width]); 
+    var xAxis = d3.axisBottom(x);            
+            
+    // coloca o eixo no grupo
+    g.append("g")
+        .attr("transform", "translate(0,"+ height + ")")
+        .call(xAxis)
+        .style('font-size', '0.8em');            
+
+	// eixo Y -------------------------------------------------------
+    var maxData = d3.max(data, function(d) { return d.value; });
+	var y = d3.scaleLinear()
+        .domain([0,(maxData+10)])
+        .range([height,0]);				
+	var yAxis = d3.axisLeft(y);
+	
+	// coloca o eixo no grupo
+	g.append("g")
+        .attr("transform", "translate(0,0)")
+		.call(yAxis)
+        .style('font-size', '0.7em'); 
+        
+    // desenha as linhas -------------------------------------------------------    
+    var line = d3.line()
+        .x(function(d) { return x(d.ano)+magico; })
+        .y(function(d) { return y(d.value); })
+        .curve(d3.curveMonotoneX);
+
+    var path = g.append('path')
+        .attr('d', line(data))
+        .attr("class", "linha-azul-escuro")
+        .attr('fill', 'none'); 
+             
+	// coloca os pontos -------------------------------------------------------	
+    g.selectAll(".dot")
+        .data(data)
+        .enter()
+        .append("circle")
+        .attr("class", "ponto-azul-escuro")
+        .attr("cx", function(d) { return x(d.ano)+magico; })
+        .attr("cy", function(d) { return y(d.value); })
+        .attr("r", 4); 
+        
+ 
+	// colocando o texto --------------------------------------------------
+	var text = g.selectAll(".text")
+		.data(data) // passa os dados para d3
+		.enter() 
+		.append("text")
+		.text(function(d) { return d.value; })
+		.attr("y",function(d) { return y(d.value);})		
+		.attr("x",function(d) { return x(d.ano)+magico;})
+        .attr("dx", ".40em")
+        .attr("class", "texto-azul-escuro");
+        
+    // coloca uma cortina para a fazer efeito de animação
+    var cortina = g.append('rect')
+       .attr('x', (-1 * width)-2)
+       .attr('y', -1 * height)
+       .attr('height', height)
+       .attr('width', width)
+       .attr('class', 'curtain')
+       .attr('transform', 'rotate(180)')
+       .style('fill', '#efefef');        
+
+    cortina.transition()
+         .duration(4000)
+         .attr('x', -2 * width)                 
+</script>
+<!-- adiciona lib js jquery ------------>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+    <!-- adiciona lib js do bootstrap ----------------->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+</body>

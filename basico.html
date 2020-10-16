@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<body>
+	<h6>Circulo - Retangulo - Linha</h6>
+        <div id="canvas"></div>
+<script>
+
+	// pega o elemento da pagina e cria um svg que é onde vai ser trabalhado os graficos
+	var svg = d3.select('#canvas')
+		.append("svg")
+		    .attr("width", 500)
+		    .attr("height",500)
+		    .style("background","#ccc");
+		    
+	var circulo = svg.append("circle")
+		.attr("cx",40) // eixo x
+		.attr("cy",40) // eixo y
+		.attr("r",30) // raio
+		.attr("fill","red");
+		
+	var rect = svg.append("rect")
+			.attr("x",10)
+			.attr("y",80)	
+			.attr("width", 100)
+			.attr("height",50)
+			.attr("fill","blue");
+			
+	var line = svg.append("line")
+			.attr("x1",10)
+			.attr("y1",150)
+			.attr("x2",200)
+			.attr("y2",300)	
+			.attr("stroke","blue") //cor da linha
+			.attr("stroke-width","5") // largura da linha
+
+</script>
+</body>

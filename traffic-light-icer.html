@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="utf-8">
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <!-- lib css bootrap -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous"> 
+<body>
+	<h6>ICER DOMINADO/DOMINANTE</h6>
+    <div class="row">
+        <div class="col-1"></div>
+        <div class="col-2">Dias Internação</div>
+        <div class="col-2">UTI</div>
+        <div class="col-2">Apto</div>
+        <div class="col-2">Freq Hosp</div>
+    </div>    
+    <div class="row">
+        <div class="col-1"></div>
+        <div id="canvas1" class="col-2"></div>
+        <div id="canvas2" class="col-2"></div>
+        <div id="canvas3" class="col-2"></div>
+        <div id="canvas4" class="col-2"></div>
+    </div> 
+    <div class="row">
+        <div class="col-1"></div>
+        <div class="col-2">TAVI DOMINADO</div>
+        <div class="col-2">TAVI POTENCIALMENTE DOMINADO</div>
+        <div class="col-2">TAVI DOMINANTE</div>
+        <div class="col-2">TAVI POTENCIALMENTE DOMINANTE</div>
+    </div>     
+    <div class="row">
+        <div class="col-1"></div>
+        <div class="col-2">Cirurgia aberta domina TAVI</div>
+        <div class="col-2">Cirurgia aberta potencialmente domina TAVI</div>
+        <div class="col-2">TAVI domina cirurgia aberta</div>
+        <div class="col-2">TAVI potencialmente domina cirurgia aberta</div>
+    </div>     
+    <script>    
+    
+    criar("VM","#canvas1");
+    criar("AM","#canvas2");
+    criar("VD","#canvas3");
+    criar("VD","#canvas4");
+    
+    function criar(ligar,elemento){
+
+        var trafficLight  = d3.select(elemento)
+            .append("svg")
+            .attr("height", 200) 
+            .attr("width",200);
+
+        // Append outer shapes
+        trafficLight.append("rect")
+            .attr("x", 20)
+            .attr("y", 20)
+            .attr("height", 160)
+            .attr("width",60)
+            .attr("fill","#666")
+            .attr("rx", 8);
+
+        // Append circular lights
+        var vm = trafficLight.append("circle") .attr("cx", 50) .attr("cy", 50) .attr("r", 20) .attr("fill","#ff3300").style("opacity","0.7"); 
+
+        var am = trafficLight.append ("circle") .attr("cx", 50) .attr("cy", 100) .attr("r", 20) .attr("fill","#ffff00").style("opacity","0.6");
+
+        var vd = trafficLight.append("circle") .attr("cx", 50) .attr("cy", 150) .attr("r", 20) .attr("fill","#00ff00").style("opacity","0.5"); 
+        
+
+        if("VM"==ligar){
+            
+            var defs = trafficLight.append("defs");
+            var bulbGradient = defs.append("radialGradient")
+                .attr("id", "bulbGradient")
+                .attr("cx", "50%")
+                .attr("cy", "50%")
+                .attr("r", "50%")
+                .attr("fx", "50%")
+                .attr("fy", "50%"); 
+
+            var start = bulbGradient.append("stop")
+                  .attr("offset", "0%")
+                  .style("stop-color", "#ff8566");
+
+            var stop =    bulbGradient.append("stop")
+                  .attr("offset", "70%")
+                  .style("stop-color", "#ff3300");             
+            
+            vm.transition().duration(1000).attr("r",23).transition().duration(500).style("opacity","1").style("fill", "url(#bulbGradient)");
+            
+        } else if("AM"==ligar){
+
+            var defsAM = trafficLight.append("defs");
+            var bulbGradienta = defsAM.append("radialGradient")
+                .attr("id", "bulbGradientAM")
+                .attr("cx", "50%")
+                .attr("cy", "50%")
+                .attr("r", "50%")
+                .attr("fx", "50%")
+                .attr("fy", "50%"); 
+
+            var start = bulbGradienta.append("stop")
+                  .attr("offset", "0%")
+                  .style("stop-color", "#ffffb3");
+
+            var stop =    bulbGradienta.append("stop")
+                  .attr("offset", "80%")
+                  .style("stop-color", "#ffff00"); 
+
+            am.transition().duration(1000).attr("r",23).transition().duration(500).style("opacity","1").style("fill", "url(#bulbGradientAM)");
+        } else {
+            
+            var defsAM = trafficLight.append("defs");
+            var bulbGradienta = defsAM.append("radialGradient")
+                .attr("id", "bulbGradientVD")
+                .attr("cx", "50%")
+                .attr("cy", "50%")
+                .attr("r", "50%")
+                .attr("fx", "50%")
+                .attr("fy", "50%"); 
+
+            var start = bulbGradienta.append("stop")
+                  .attr("offset", "0%")
+                  .style("stop-color", "#b3ffb3");
+
+            var stop =    bulbGradienta.append("stop")
+                  .attr("offset", "80%")
+                  .style("stop-color", "#00ff00");             
+            
+            vd.transition().duration(1000).attr("r",23).transition().duration(500).style("opacity","1").style("fill", "url(#bulbGradientVD)");
+        }
+ 
+    
+    }
+    </script>
+<!-- adiciona lib js jquery ------------>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+    <!-- adiciona lib js do bootstrap ----------------->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+</body>     

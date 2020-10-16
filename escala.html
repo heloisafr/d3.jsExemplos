@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<script src="https://d3js.org/d3.v5.min.js"></script>
+<!-- lib css bootrap -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous"> 
+<script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+<style type="text/css">
+
+.escala {
+font-size: 0.7em;   
+}
+
+.escala .ponto {
+fill: #2c6bb4;
+stroke: none;
+opacity: 0.8;
+}
+
+.escala .texto {
+   fill: #FFF;   
+}
+
+.escala .axis line{
+  stroke: #666;
+}
+
+.escala .axis path{
+  stroke: #666;
+}
+
+.escala .axis text{
+  fill: #666;
+}
+</style>
+<body>
+	<h6>Escala</h6>
+       <div class="row">
+           <div class="col-2">1</div>
+           <div id="canvas" class="col-5"></div>
+           <div class="col-2">2</div>
+       </div>
+<script>
+
+	// ponto a ser marcado na escala
+	 var ponto = 9;
+	 
+	 // valores da escala
+	 // observar que o valor inicial do intervalo é igual ao valor final do intervalo anterior
+	var data = [
+		{"color": "#ff5950", "interval": [0,6], "texto": "Grave"},
+		{"color": "#ffc107", "interval":[6,8], "texto": "Moderado"},
+		{"color": "#2dbc4e", "interval":[8,10], "texto": "Leve"}
+	]
+    
+	var width = 500;
+	var height = 80;
+	var margin = {top: 20, right: 15, bottom: 20, left: 10};
+     
+	var svg = d3.select('#canvas')
+		.append("svg")
+		.attr('viewBox','0 0 '+width+' '+height);
+	
+	var minData = d3.min(data, function(d) { return d.interval[0]; });	
+	var maxData = d3.max(data, function(d) { return d.interval[1]; });
+		
+	width = width - margin.left - margin.right;
+	height = height - margin.bottom;
+	var line_height = height/3;
+		    
+	var g = svg
+		.append("g")
+		.attr("class","escala")
+		.attr("transform", "translate("+margin.left+",0)");            
+            
+	// eixo X ----------------------------------------------------------
+	var x = d3.scaleLinear()
+		.domain([minData, maxData])
+		.range([minData, width]);
+	var xAxis = d3.axisBottom(x);            
+            
+	g.append("g")
+		.attr("transform", "translate(0,"+ height + ")")
+		.attr("class", "axis")
+		.call(xAxis);
+	
+	// eixo Y -------------------------------------------------------
+	var y = d3.scaleLinear()
+		.domain([0,1])
+		.range([height-(line_height/2),0]);	
+        
+	// desenha a escala -------------------------------------------------------    
+	var line = d3.line()
+		.x(function(d) { return x(d); })
+		.y(function(d) { return y(0); });
+
+	$.each(data,function(i,value){
+	
+		g.append('path')
+			.attr('d', line(value.interval))
+			.style('fill', 'none')	
+			.style('stroke', value.color)	
+			.style('stroke-width', line_height);
+			
+		g.append("text")
+			.text(value.texto)
+			.attr("y", y(0))		
+			.attr("x", x(value.interval[0]))
+			.attr("dx", "0.50em")
+			.attr("dy", "0.30em")
+			.attr("class", "texto");			
+	});
+	
+	// coloca o desenho do ponto -----------------------------------------------
+	var marcador = g.append("svg")
+		.attr('preserveAspectRatio', 'xMinYMin meet')
+		.attr('width','12')	
+		.attr('height','20')
+		.attr('y',y(0.7))
+		.attr('x',x(0));
+		
+	var points = [[0,0],[12,0],[12,15],[6,20],[0,15]];
+		  		  
+	marcador.append("polygon")
+		.attr("points",points)
+		.attr("class", "ponto");	
+        
+	marcador.transition()
+		 .duration(4000)
+		.attr('x',x(ponto)-6); // 6 porque é a metade do tamanho do poligono 
+		
+	// colocando o texto --------------------------------------------------
+	marcador.append("text")
+		.text(ponto)
+		.attr("y", 12)		
+		.attr("x", 3)
+		.attr("class", "texto")
+		.style('opacity', '0');	
+
+	marcador_texto.transition()
+		.duration(4000)
+		.style('opacity', '1');
+</script>
+<!-- adiciona lib js jquery ------------>
+    
+    <!-- adiciona lib js do bootstrap ----------------->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+</body>
